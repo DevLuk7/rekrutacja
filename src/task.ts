@@ -16,13 +16,6 @@ export const categoryTree = async (
     return [];
   }
 
-  const toShowOnHome: number[] = data.reduce((acc, category) => {
-    if (category.Title && category.Title.includes('#')) {
-      acc.push(category.id);
-    }
-    return acc;
-  }, [] as number[]);
-
   const sortByOrder = (a: CategoryListElement, b: CategoryListElement) =>
     a.order - b.order;
 
@@ -44,15 +37,33 @@ export const categoryTree = async (
       .sort(sortByOrder);
   };
 
+  const setShowOnHome = (
+    categories: CategoryListElement[],
+    toShowOnHome: number[]
+  ): void => {
+    if (categories.length <= 5) {
+      categories.forEach((category) => (category.showOnHome = true));
+    } else if (toShowOnHome.length > 0) {
+      categories.forEach(
+        (category) => (category.showOnHome = toShowOnHome.includes(category.id))
+      );
+    } else {
+      categories.forEach(
+        (category, index) => (category.showOnHome = index < 3)
+      );
+    }
+  };
+
+  const toShowOnHome: number[] = data.reduce((acc, category) => {
+    if (category.Title && category.Title.includes('#')) {
+      acc.push(category.id);
+    }
+    return acc;
+  }, [] as number[]);
+
   const result = convertCategories(data);
 
-  if (result.length <= 5) {
-    result.forEach((a) => (a.showOnHome = true));
-  } else if (toShowOnHome.length > 0) {
-    result.forEach((x) => (x.showOnHome = toShowOnHome.includes(x.id)));
-  } else {
-    result.forEach((x, index) => (x.showOnHome = index < 3));
-  }
+  setShowOnHome(result, toShowOnHome);
 
   return result;
 };
